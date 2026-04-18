@@ -6,9 +6,10 @@ interface EchartsSunburstProps {
   data: any[];
   onNodeSelect: (nodeName: string) => void;
   selectedNode: string;
+  currentPath?: string[];
 }
 
-const EchartsSunburst: React.FC<EchartsSunburstProps> = ({ data, onNodeSelect, selectedNode }) => {
+const EchartsSunburst: React.FC<EchartsSunburstProps> = ({ data, onNodeSelect, selectedNode, currentPath = [] }) => {
   const [ringStyle, setRingStyle] = useState<'equal' | 'wider' | 'narrower'>('narrower');
 
   const getSubTitle = () => {
@@ -105,32 +106,46 @@ const EchartsSunburst: React.FC<EchartsSunburstProps> = ({ data, onNodeSelect, s
   };
 
   return (
-    <div className="w-full flex flex-col h-[500px]">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-1 mb-3 gap-3">
+    <div className="w-full flex flex-col h-[500px] relative">
+      <div className="absolute top-0 left-0 z-10 p-2 pointer-events-none">
+        {/* Left: Breadcrumbs Drill-down */}
+        <div className="flex flex-wrap items-center gap-1.5 text-[14px] pointer-events-auto">
+          <span className="text-[12px] font-bold text-slate-400 mr-1 flex items-center gap-1">下钻链路:</span>
+          {currentPath.map((item, idx) => {
+            const isLast = idx === currentPath.length - 1;
+            const nodeValue = item === '全量数据' ? 'All' : item;
+            return (
+              <React.Fragment key={item}>
+                {idx > 0 && <span className="text-slate-300 font-light">&gt;</span>}
+                <button 
+                  onClick={() => onNodeSelect(nodeValue)}
+                  className={`transition-colors ${isLast ? "text-blue-600 font-bold" : "text-slate-500 hover:text-blue-500 hover:bg-blue-50 px-1.5 py-0.5 -mx-1.5 rounded"}`}
+                >
+                  {item}
+                </button>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="absolute bottom-0 right-0 z-10 p-2 pointer-events-none">
+        {/* Right Bottom: Layout Button Group */}
         <Radio.Group 
           value={ringStyle} 
           onChange={(e) => setRingStyle(e.target.value)} 
           size="small"
           optionType="button"
           buttonStyle="solid"
-          className="shadow-sm"
+          className="shadow-sm shrink-0 pointer-events-auto"
         >
           <Radio.Button value="equal">等宽 (标准)</Radio.Button>
           <Radio.Button value="wider">向外渐宽 (推荐)</Radio.Button>
           <Radio.Button value="narrower">向外渐窄 (聚焦)</Radio.Button>
         </Radio.Group>
-
-        {selectedNode !== 'All' && (
-          <button 
-            onClick={() => onNodeSelect('All')}
-            className="text-[11px] sm:text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-full transition-colors font-medium border border-slate-200"
-          >
-             返回全局视图 / 重置过滤
-          </button>
-        )}
       </div>
 
-      <div className="flex-1 relative w-full h-full">
+      <div className="flex-1 relative w-full h-full mt-8 mb-6">
         <ReactECharts
           option={option}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, height: '100%', width: '100%' }}

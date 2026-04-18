@@ -11,8 +11,6 @@ interface LeadDetailsTableProps {
 }
 
 export const LeadDetailsTable: React.FC<LeadDetailsTableProps> = ({ leads, filterNode, isEmbedded }) => {
-  const [searchText, setSearchText] = useState('');
-
   // 1. Filter by ECharts node selection based on data hierarchy classification
   const nodeFiltered = leads.filter(lead => {
     if (filterNode === 'All' || filterNode === '总活跃线索') return true;
@@ -41,13 +39,6 @@ export const LeadDetailsTable: React.FC<LeadDetailsTableProps> = ({ leads, filte
 
     return true; // Fallback
   });
-
-  // 2. Filter by Search Query
-  const finalFiltered = nodeFiltered.filter(l => 
-    l.person.includes(searchText) || 
-    l.customerName.includes(searchText) || 
-    l.leadName.includes(searchText)
-  );
 
   const columns: ColumnsType<LeadRecord> = [
     {
@@ -113,37 +104,28 @@ export const LeadDetailsTable: React.FC<LeadDetailsTableProps> = ({ leads, filte
 
   return (
     <div className={isEmbedded ? "mt-4" : "bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 mt-4"}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-        {!isEmbedded && (
+      {!isEmbedded && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
           <div>
              <h2 className="text-[14px] font-bold text-slate-800">底层数据详情追踪</h2>
              <p className="text-xs text-slate-500 mt-1">目前数据范围：通过上方层级图点击钻取过滤而来</p>
           </div>
-        )}
-        <div className={isEmbedded ? "w-full sm:w-80" : "w-full sm:w-64"}>
-          <Input 
-             placeholder="搜索人员、客户或线索名称..." 
-             prefix={<SearchOutlined className="text-slate-400" />}
-             value={searchText}
-             onChange={e => setSearchText(e.target.value)}
-             allowClear
-          />
         </div>
-      </div>
+      )}
 
       <div className="mb-3 flex items-center gap-2">
         <span className="text-xs text-slate-500">当前过滤节点:</span>
         <Tag color={filterNode === 'All' ? 'default' : 'blue'}>
            {filterNode === 'All' ? '全景展示 (无过滤)' : filterNode}
         </Tag>
-        <span className="text-xs text-slate-500 ml-2">总计符合: <span className="font-bold text-slate-800">{finalFiltered.length}</span> 条</span>
+        <span className="text-xs text-slate-500 ml-2">总计符合: <span className="font-bold text-slate-800">{nodeFiltered.length}</span> 条</span>
       </div>
 
       <Table 
         columns={columns} 
-        dataSource={finalFiltered} 
+        dataSource={nodeFiltered} 
         rowKey="id"
-        pagination={{ pageSize: 10 }}
+        pagination={{ pageSize: 20, showTotal: (total) => `共 ${total} 条`, showSizeChanger: true }}
         size="small"
         scroll={{ x: 700 }}
       />

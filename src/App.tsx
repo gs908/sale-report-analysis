@@ -5,8 +5,9 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Spin, Tabs, Select, Input } from 'antd';
+import { Spin, Tabs, Select, Input, DatePicker } from 'antd';
 import type { TabsProps } from 'antd';
+import dayjs from 'dayjs';
 import { 
   getLeads, 
   getPersonnel, 
@@ -21,6 +22,7 @@ import { UnreportedRankTable, ReportedStatsTable, GroupStatsTable } from './comp
 import { LeadDetailsTable } from './components/LeadDetailsTable';
 
 import { ClipboardCheck } from 'lucide-react';
+import { SearchOutlined } from '@ant-design/icons';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -38,6 +40,9 @@ export default function App() {
   const [filterProcessStatus, setFilterProcessStatus] = useState<string>('All');
   const [filterVideo, setFilterVideo] = useState<string>('All');
 
+  // Date Range state
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([dayjs('2026-04-08'), dayjs('2026-04-22')]);
+
   useEffect(() => {
     async function fetchData() {
       const [leadsData, attrData] = await Promise.all([getLeads(), getPersonnel()]);
@@ -51,7 +56,17 @@ export default function App() {
   // Compute globally filtered leads and make the entire dashboard reactive
   const filteredGlobalLeads = useMemo(() => {
     return leads.filter(lead => {
-      if (filterLeadId && !lead.id.toLowerCase().includes(filterLeadId.toLowerCase())) return false;
+      if (filterLeadId) {
+        const searchLower = filterLeadId.toLowerCase();
+        if (!(
+          lead.id.toLowerCase().includes(searchLower) ||
+          lead.person.toLowerCase().includes(searchLower) ||
+          lead.customerName.toLowerCase().includes(searchLower) ||
+          (lead.leadName || '').toLowerCase().includes(searchLower)
+        )) {
+          return false;
+        }
+      }
       
       if (filterReported !== 'All') {
         const isRep = filterReported === 'Yes';
@@ -96,6 +111,12 @@ export default function App() {
   const displayStats = useMemo(() => {
     const unreportedCount = filteredGlobalLeads.filter(l => !l.isReported).length;
     const reportedCount = filteredGlobalLeads.filter(l => l.isReported).length;
+    
+    // Add logic for new metrics
+    const communicationReportCount = filteredGlobalLeads.filter(l => l.reportStatus?.startsWith('已回传')).length;
+    const audioVideoCount = filteredGlobalLeads.filter(l => l.reportStatus?.includes('音视频')).length;
+    const videoGeneratedCount = filteredGlobalLeads.filter(l => l.reportStatus?.includes('生成视频')).length;
+
     const totalGroupsInvolved = filteredGlobalLeads
       .filter(l => l.isReported)
       .reduce((acc, lead) => acc + lead.groupCount, 0);
@@ -103,10 +124,68 @@ export default function App() {
       totalActiveLeads: filteredGlobalLeads.length,
       unreportedCount,
       reportedCount,
+      communicationReportCount,
+      audioVideoCount,
+      videoGeneratedCount,
       totalGroupsInvolved
     };
   }, [filteredGlobalLeads]);
 
+
+  // Calculate Current Path for Breadcrumb
+  const nodePathMap: Record<string, string[]> = {
+    'All': ['全量数据'],
+    '未报备': ['全量数据', '未报备'],
+    '已报备': ['全量数据', '已报备'],
+    '未回传': ['全量数据', '已报备', '未回传'],
+    '已回传': ['全量数据', '已报备', '已回传'],
+    '已中标': ['全量数据', '已报备', '已回传', '已中标'],
+    '截图': ['全量数据', '已报备', '已回传', '截图'],
+    '音视频': ['全量数据', '已报备', '已回传', '音视频'],
+    '无法处理': ['全量数据', '已报备', '已回传', '音视频', '无法处理'],
+    '已处理': ['全量数据', '已报备', '已回传', '音视频', '已处理'],
+    '角色判定': ['全量数据', '已报备', '已回传', '音视频', '已处理', '角色判定'],
+    '正常进行': ['全量数据', '已报备', '已回传', '音视频', '已处理', '正常进行'],
+    '正常分析': ['全量数据', '已报备', '已回传', '音视频', '已处理', '正常分析'],
+    '生成视频': ['全量数据', '已报备', '已回传', '音视频', '已处理', '正常分析', '生成视频'],
+    '处理中': ['全量数据', '已报备', '已回传', '音视频', '已处理', '正常分析', '处理中'],
+  };
+  const currentPath = nodePathMap[selectedNode] || ['全量数据'];
+
+  // Sync Sunburst Node clicks with Global Filters
+  const handleNodeSelect = (node: string) => {
+    setSelectedNode(node);
+
+    // Reset fields selectively, then apply new state based on drill-down logic
+    let rpt = 'All', ret = 'All', cont = 'All', proc = 'All', status = 'All', vid = 'All';
+
+    if (node === '未报备') { rpt = 'No'; }
+    if (['已报备', '未回传', '已回传', '已中标', '截图', '音视频', '无法处理', '已处理', '角色判定', '正常进行', '正常分析', '生成视频', '处理中'].includes(node)) { rpt = 'Yes'; }
+
+    if (node === '未回传') { ret = 'No'; }
+    if (['已回传', '已中标', '截图', '音视频', '无法处理', '已处理', '角色判定', '正常进行', '正常分析', '生成视频', '处理中'].includes(node)) { ret = 'Yes'; }
+
+    if (node === '已中标') { cont = '中标'; }
+    if (node === '截图') { cont = '截图'; }
+    if (['音视频', '无法处理', '已处理', '角色判定', '正常进行', '正常分析', '生成视频', '处理中'].includes(node)) { cont = '音视频'; }
+
+    if (node === '无法处理') { proc = 'No'; }
+    if (['已处理', '角色判定', '正常进行', '正常分析', '生成视频', '处理中'].includes(node)) { proc = 'Yes'; }
+
+    if (node === '角色判定') { status = '角色判定'; }
+    if (node === '正常进行') { status = '正常进行'; }
+    if (['正常分析', '生成视频', '处理中'].includes(node)) { status = '正常分析'; }
+
+    if (node === '生成视频') { vid = 'Yes'; }
+    if (node === '处理中') { vid = 'No'; }
+
+    setFilterReported(rpt);
+    setFilterReturned(ret);
+    setFilterContent(cont);
+    setFilterProcessed(proc);
+    setFilterProcessStatus(status);
+    setFilterVideo(vid);
+  };
 
   if (loading) {
     return (
@@ -150,8 +229,20 @@ export default function App() {
               <ClipboardCheck className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-base sm:text-[18px] font-bold text-slate-800 tracking-tight">
-              线索报备数据枢纽
+              线索报备情况一览
             </h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-medium text-slate-500">数据范围：</span>
+            <DatePicker.RangePicker 
+              value={dateRange as any} 
+              onChange={(dates) => setDateRange(dates as any)}
+              format="M月D日"
+              allowClear={false}
+              bordered={false}
+              className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[13px]"
+            />
           </div>
         </div>
       </header>
@@ -159,35 +250,51 @@ export default function App() {
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col gap-6">
         
         {/* Global Summary Stats */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <TopStatCard 
-            title="总活跃线索数" 
-            value={displayStats.totalActiveLeads} 
-            color="text-slate-800"
-            subText="当前过滤阶段合计"
-          />
-          <TopStatCard 
-            title="已报备线索数" 
-            value={displayStats.reportedCount} 
-            color="text-blue-600"
-            subText={displayStats.totalActiveLeads > 0 ? `报备率: ${((displayStats.reportedCount / displayStats.totalActiveLeads) * 100).toFixed(0)}%` : '报备率: 0%'}
-          />
-          <TopStatCard 
-            title="未报备线索数" 
-            value={displayStats.unreportedCount} 
-            color="text-amber-500"
-            subText="请相关人员跟进"
-          />
-          <TopStatCard 
-            title="累计涉及工作群" 
-            value={displayStats.totalGroupsInvolved} 
-            color="text-slate-800"
-            subText="当前条件下的群组聚合"
-          />
+        <section className="flex flex-col gap-3 lg:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-4">
+            <TopStatCard 
+              title="活跃线索总数" 
+              value={displayStats.totalActiveLeads} 
+              color="text-slate-800"
+            />
+            <TopStatCard 
+              title="已报备线索数" 
+              value={displayStats.reportedCount} 
+              color="text-blue-600"
+            />
+            <TopStatCard 
+              title="未报备线索数" 
+              value={displayStats.unreportedCount} 
+              color="text-amber-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
+            <TopStatCard 
+              title="交流报备总数" 
+              value={displayStats.communicationReportCount} 
+              color="text-cyan-600"
+            />
+            <TopStatCard 
+              title="音视频回传总数" 
+              value={displayStats.audioVideoCount} 
+              color="text-indigo-600"
+            />
+            <TopStatCard 
+              title="视频生成数" 
+              value={displayStats.videoGeneratedCount} 
+              color="text-emerald-600"
+            />
+            <TopStatCard 
+              title="涉及的群数" 
+              value={displayStats.totalGroupsInvolved} 
+              color="text-slate-700"
+            />
+          </div>
         </section>
 
         {/* Personnel Stats Row: 1 Row, 3 Columns */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+        <div className="grid grid-cols-1 min-[500px]:grid-cols-3 gap-4 lg:gap-6 items-start">
           
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
              <div className="pb-2 mb-2 border-b border-slate-50">
@@ -222,8 +329,9 @@ export default function App() {
            <div className="w-full max-w-[800px] mx-auto">
              <EchartsSunburst 
                 data={chartData} 
-                onNodeSelect={(node) => setSelectedNode(node)} 
+                onNodeSelect={handleNodeSelect} 
                 selectedNode={selectedNode}
+                currentPath={currentPath}
              />
            </div>
         </div>
@@ -236,9 +344,9 @@ export default function App() {
                
                {/* --- GLOBAL FILTERS --- */}
                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 shadow-inner flex flex-wrap gap-x-4 gap-y-3">
-                  <div className="flex-1 min-w-[120px] max-w-[200px]">
-                    <div className="text-[11px] text-slate-600 mb-1 font-semibold">线索编号 / 搜索</div>
-                    <Input size="small" placeholder="输入编号快速检索" value={filterLeadId} onChange={e => setFilterLeadId(e.target.value)} allowClear />
+                  <div className="flex-1 min-w-[150px] max-w-[250px]">
+                    <div className="text-[11px] text-slate-600 mb-1 font-semibold">综合文本检索</div>
+                    <Input size="small" placeholder="输入编号/人员/客户等" value={filterLeadId} onChange={e => setFilterLeadId(e.target.value)} allowClear prefix={<SearchOutlined className="text-slate-400" />} />
                   </div>
                   <div className="flex-1 min-w-[90px] max-w-[140px]">
                     <div className="text-[11px] text-slate-600 mb-1 font-semibold">是否报备</div>
@@ -276,16 +384,18 @@ export default function App() {
   );
 }
 
-function TopStatCard({ title, value, color, subText }: { title: string; value: number; color: string; subText: string }) {
+function TopStatCard({ title, value, color }: { title: string; value: number; color: string }) {
   return (
-    <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between min-h-[100px] transition-transform hover:scale-[1.02]">
-      <div className="flex justify-between items-start mb-2">
-         <div className="text-[12px] font-medium text-slate-500 uppercase">{title}</div>
+    <div className="relative group bg-white/80 backdrop-blur-md p-4 sm:p-5 rounded-lg border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-md hover:border-blue-300 overflow-hidden flex flex-col justify-center items-center min-h-[100px]">
+      {/* Decorative tech background element */}
+      <div className="absolute -right-4 -top-4 w-16 h-16 bg-slate-50 rounded-full opacity-50 inset-0 pointer-events-none group-hover:scale-150 transition-transform duration-500 ease-out" />
+      
+      <div className="relative z-10 flex flex-col items-center justify-center gap-2 w-full">
+        <div className="text-[13px] font-bold text-slate-500 text-center">{title}</div>
+        <div className={cn("text-3xl sm:text-4xl font-black font-mono tracking-tight text-center", color)}>{value}</div>
       </div>
-      <div>
-         <div className={cn("text-2xl sm:text-3xl font-bold tracking-tight mb-0.5", color)}>{value}</div>
-         <div className="text-[10px] text-slate-400">{subText}</div>
-      </div>
+      {/* Bottom subtle accent line representing data stream */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-[30%] bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </div>
   );
 }

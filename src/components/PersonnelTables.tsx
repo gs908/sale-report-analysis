@@ -30,7 +30,7 @@ export const UnreportedRankTable: React.FC<UnreportedRankProps> = ({ data }) => 
     }
   ];
 
-  return <Table columns={columns} dataSource={data} rowKey="person" pagination={{ pageSize: 5 }} size="middle" className="w-full" scroll={{ x: 400 }} />;
+  return <Table columns={columns} dataSource={data} rowKey="person" pagination={{ pageSize: 20, position: ['bottomCenter'], showSizeChanger: false }} size="small" className="w-full" />;
 }
 
 interface ReportedStatsProps {
@@ -63,7 +63,7 @@ export const ReportedStatsTable: React.FC<ReportedStatsProps> = ({ data }) => {
     }
   ];
 
-  return <Table columns={columns} dataSource={data} rowKey="person" pagination={{ pageSize: 5 }} size="middle" scroll={{ x: 500 }} />;
+  return <Table columns={columns} dataSource={data} rowKey="person" pagination={{ pageSize: 20, position: ['bottomCenter'], showSizeChanger: false }} size="small" className="w-full" />;
 }
 
 interface GroupStatsProps {
@@ -108,5 +108,5 @@ export const GroupStatsTable: React.FC<GroupStatsProps> = ({ data }) => {
     }
   ];
 
-  return <Table columns={columns} dataSource={data} rowKey="name" pagination={{ pageSize: 5 }} size="middle" scroll={{ x: 600 }} />;
+  return <Table columns={columns} dataSource={data} rowKey="name" pagination={{ pageSize: 20, position: ['bottomCenter'], showSizeChanger: false }} size="small" className="w-full" />;
 }
