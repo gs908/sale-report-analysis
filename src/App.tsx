@@ -363,7 +363,10 @@ export default function App() {
         {/* Global Filters & Details Table Wrapped Together */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 mt-2">
            <div className="mb-4 pb-4 border-b border-slate-100">
-               <h2 className="text-[14px] font-bold text-slate-800">售前交流报告生成情况一览</h2>
+               <h2 className="text-[14px] font-bold text-slate-800 flex items-center gap-2">
+                 售前交流报告生成情况一览
+                 <span className="text-[10px] font-medium text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">仅限已报备</span>
+               </h2>
                <p className="text-xs text-slate-500 mt-1 mb-4">通过下方复合条件过滤，将实时改变全盘仪表板及上方排行榜图表结构</p>
                
                {/* --- GLOBAL FILTERS --- */}

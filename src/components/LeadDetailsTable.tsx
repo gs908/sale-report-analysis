@@ -67,32 +67,78 @@ export const LeadDetailsTable: React.FC<LeadDetailsTableProps> = ({ leads, filte
       render: (text) => <span className="font-medium">{text}</span>
     },
     {
-      title: '状态',
-      key: 'status',
+      title: '是否回传',
+      key: 'isReturned',
+      align: 'center',
       render: (_, record) => {
-        if (!record.isReported) {
-          return <Tag color="warning">未报备</Tag>;
-        }
-        
-        let color = 'blue';
-        if (record.reportStatus === '未回传') color = 'error';
-        else if (record.reportStatus.includes('生成视频') || record.reportStatus === '已回传-已中标') color = 'success';
-        else if (record.reportStatus.includes('处理中')) color = 'processing';
-        else if (record.reportStatus.includes('无法处理')) color = 'default';
-
-        // Extract the last part of the string as the display badge
-        const parts = record.reportStatus.split('-');
-        const displayLabel = parts[parts.length - 1];
-
-        return <Tag color={color}>{displayLabel}</Tag>;
+        if (!record.isReported) return <span className="text-slate-300">-</span>;
+        const isReturned = record.reportStatus !== '未回传';
+        return isReturned ? <span className="text-emerald-500 font-medium">是</span> : <span className="text-rose-500 font-medium">否</span>;
       },
-      width: 120,
+      width: 90,
     },
     {
-      title: '群数量',
-      dataIndex: 'groupCount',
-      key: 'groupCount',
-      width: 80,
+      title: '是否处理',
+      key: 'isProcessed',
+      align: 'center',
+      render: (_, record) => {
+        if (!record.isReported || record.reportStatus === '未回传') return <span className="text-slate-300">-</span>;
+        if (record.reportStatus.includes('无法处理')) return <span className="text-slate-400">无法处理</span>;
+        if (record.reportStatus.includes('已处理')) return <span className="text-sky-500 font-medium">已处理</span>;
+        return <span className="text-slate-300">-</span>;
+      },
+      width: 90,
+    },
+    {
+      title: '处理状态',
+      key: 'processStatus',
+      align: 'center',
+      render: (_, record) => {
+        if (!record.isReported) return <span className="text-slate-300">-</span>;
+        
+        const parts = record.reportStatus.split('-');
+        let status = '-';
+        if (record.reportStatus.includes('角色判定')) status = '角色判定';
+        else if (record.reportStatus.includes('正常进行')) status = '正常进行';
+        else if (record.reportStatus.includes('正常分析')) status = '正常分析';
+        else if (parts.includes('截图')) status = '截图';
+        else if (parts.includes('已中标')) status = '已中标';
+
+        if (status === '-') return <span className="text-slate-300">-</span>;
+        
+        const isNormal = status.includes('正常');
+        return <span className={isNormal ? "text-blue-500" : "text-amber-500"}>{status}</span>;
+      },
+      width: 100,
+    },
+    {
+      title: '是否生成视频',
+      key: 'isVideoGenerated',
+      align: 'center',
+      render: (_, record) => {
+        if (!record.isReported) return <span className="text-slate-300">-</span>;
+        if (record.reportStatus.includes('生成视频')) return <Tag color="success" className="m-0">已生成</Tag>;
+        if (record.reportStatus.includes('处理中')) return <Tag color="processing" className="m-0">处理中</Tag>;
+        return <span className="text-slate-300">-</span>;
+      },
+      width: 110,
+    },
+    {
+      title: '是否建群',
+      key: 'isGroupCreated',
+      align: 'center',
+      render: (_, record) => {
+        const hasGroup = record.groupCount > 0;
+        return hasGroup ? (
+          <div className="flex items-center justify-center gap-1">
+             <span className="text-emerald-500 font-medium">是</span>
+             <span className="text-[11px] text-slate-400">({record.groupCount})</span>
+          </div>
+        ) : (
+          <span className="text-slate-400">否</span>
+        );
+      },
+      width: 90,
     },
     {
       title: '备注信息',
