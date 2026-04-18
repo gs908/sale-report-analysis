@@ -235,8 +235,8 @@ export default function App() {
     <div className="min-h-screen bg-[#f3f4f6] text-slate-800 font-sans pb-10">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-2 min-h-[60px] flex flex-col min-[500px]:flex-row min-[500px]:items-center justify-between gap-y-3 gap-x-4">
+          <div className="flex items-center gap-2 shrink-0 pt-1 min-[500px]:pt-0">
             <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center shadow-sm">
               <ClipboardCheck className="w-5 h-5 text-white" />
             </div>
@@ -245,21 +245,21 @@ export default function App() {
             </h1>
           </div>
           
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-medium text-slate-500">数据范围：</span>
+          <div className="flex flex-col min-[380px]:flex-row min-[380px]:items-center gap-2 w-full min-[500px]:w-auto">
+            <span className="text-[13px] font-medium text-slate-500 shrink-0">数据范围：</span>
             <DatePicker.RangePicker 
               value={dateRange as any} 
               onChange={(dates) => setDateRange(dates as any)}
               format="M月D日"
               allowClear={false}
               bordered={false}
-              className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[13px]"
+              className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[13px] flex-1 min-[380px]:w-[220px]"
             />
             <Button 
                type="primary" 
                icon={<SyncOutlined />} 
                onClick={handleRefresh}
-               className="ml-2 bg-blue-600 hover:bg-blue-700 shadow-sm"
+               className="bg-blue-600 hover:bg-blue-700 shadow-sm w-full min-[380px]:w-auto mt-1 min-[380px]:mt-0"
                size="small"
             >
               刷新
