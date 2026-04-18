@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@utility scrollbar-hide {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom minimal overrides for Ant Design */
+.custom-tabs-sm .ant-tabs-tab {
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+}
+.custom-tabs-sm .ant-tabs-nav {
+  margin-bottom: 12px !important;
+}
+.ant-table-thead > tr > th {
+  background-color: #f8fafc !important;
+  color: #64748b !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
+.ant-table-tbody > tr > td {
+  font-size: 13px !important;
+}
