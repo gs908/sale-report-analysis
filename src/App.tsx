@@ -5,6 +5,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Spin, Tabs, Select, Input, DatePicker, Button } from 'antd';
 import type { TabsProps } from 'antd';
 import dayjs from 'dayjs';
@@ -22,10 +23,11 @@ import { UnreportedRankTable, ReportedStatsTable, GroupStatsTable } from './comp
 import { LeadDetailsTable } from './components/LeadDetailsTable';
 
 import { ClipboardCheck } from 'lucide-react';
-import { SearchOutlined, SyncOutlined } from '@ant-design/icons';
+import { SearchOutlined, SyncOutlined, SettingOutlined } from '@ant-design/icons';
 import { cn } from './lib/utils';
+import AdminDashboard from './pages/AdminDashboard';
 
-export default function App() {
+function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [personnel, setPersonnel] = useState<PersonnelRecord[]>([]);
@@ -264,6 +266,9 @@ export default function App() {
             >
               刷新
             </Button>
+            <Link to="/admin" className="w-full min-[380px]:w-auto mt-1 min-[380px]:mt-0 min-[380px]:ml-1">
+              <Button size="small" className="w-full text-slate-600 hover:text-blue-600 border-slate-200" icon={<SettingOutlined />}>后台</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -424,5 +429,16 @@ function TopStatCard({ title, value, color }: { title: string; value: number; co
       {/* Bottom subtle accent line representing data stream */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-[30%] bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/admin/*" element={<AdminDashboard />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
