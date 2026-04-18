@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Select, Popconfirm, Tag } from 'antd';
+import { Table, Button, Space, Modal, Form, Input, Select, Popconfirm, Tag, Row, Col, Divider, Typography } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+
+const { Title } = Typography;
 
 interface ReportRecord {
   id: string;
@@ -25,6 +28,7 @@ export default function ReportInfoManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ReportRecord | null>(null);
   const [form] = Form.useForm();
+  const [queryForm] = Form.useForm();
 
   const handleOpenModal = (record?: ReportRecord) => {
     setEditingRecord(record || null);
@@ -60,56 +64,72 @@ export default function ReportInfoManagement() {
       dataIndex: 'isReported', 
       key: 'isReported',
       width: 100,
-      render: (val) => val ? <Tag color="blue">已报备</Tag> : <Tag color="default">未报备</Tag>
+      render: (val) => val ? <Tag color="success">已报备</Tag> : <Tag color="default">未报备</Tag>
     },
-    { title: '回传情况', dataIndex: 'isReturned', key: 'isReturned', width: 100, render: (v) => v ? '已回传' : '未回传' },
+    { 
+      title: '回传情况', 
+      dataIndex: 'isReturned', 
+      key: 'isReturned', 
+      width: 100, 
+      render: (v) => v ? <Tag color="success">已回传</Tag> : <Tag color="default">未回传</Tag>
+    },
     { title: '处理情况', dataIndex: 'processingStatus', key: 'processingStatus', width: 100 },
-    { title: '是否生成视频', dataIndex: 'isVideoGenerated', key: 'isVideoGenerated', width: 120, render: (v) => v ? '是' : '否' },
+    { title: '视频生成', dataIndex: 'isVideoGenerated', key: 'isVideoGenerated', width: 100, render: (v) => v ? '是' : '否' },
     { title: '是否建群', dataIndex: 'isGroupCreated', key: 'isGroupCreated', width: 100, render: (v) => v ? '是' : '否' },
     { title: '备注', dataIndex: 'remark', key: 'remark', width: 150 },
     { 
       title: '操作', 
       key: 'action', 
-      width: 100,
+      width: 120,
       fixed: 'right',
       render: (_, record) => (
-        <Space size="small">
+        <Space size="middle" orientation="horizontal">
           <Button type="link" size="small" onClick={() => handleOpenModal(record)}>编辑</Button>
           <Popconfirm title="确定删除？" onConfirm={() => handleDelete(record.id)}>
-            <Button type="link" danger size="small">删除</Button>
+            <a style={{ color: '#ff4d4f' }}>删除</a>
           </Popconfirm>
         </Space>
       ) 
     },
   ];
 
+
   return (
     <div>
-      <div className="mb-4">
-        <Form layout="inline" className="gap-4">
-           <Form.Item label="负责人"><Input placeholder="负责人" allowClear /></Form.Item>
-           <Form.Item label="线索名称"><Input placeholder="线索名称" allowClear /></Form.Item>
-           <Form.Item label="客户名称"><Input placeholder="客户名称" allowClear /></Form.Item>
-           <Form.Item label="报备情况">
-              <Select style={{width: 120}} options={[{value: true, label: '已报备'}, {value: false, label: '未报备'}]} allowClear />
-           </Form.Item>
-           <Form.Item label="回传情况">
-              <Select style={{width: 120}} options={[{value: true, label: '已回传'}, {value: false, label: '未回传'}]} allowClear />
-           </Form.Item>
-           <Form.Item label="处理情况"><Input placeholder="处理情况" allowClear style={{width: 120}}/></Form.Item>
-           <Form.Item label="视频生成">
-              <Select style={{width: 100}} options={[{value: true, label: '是'}, {value: false, label: '否'}]} allowClear />
-           </Form.Item>
-           <Form.Item label="是否建群">
-              <Select style={{width: 100}} options={[{value: true, label: '是'}, {value: false, label: '否'}]} allowClear />
-           </Form.Item>
-           <Form.Item><Button type="primary">查询</Button></Form.Item>
-        </Form>
-      </div>
+      {/* 1. 顶部标题 */}
+      <Title level={4} style={{ marginBottom: 24 }}>报备信息管理</Title>
       
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-slate-800">报备信息管理</h3>
-        <Button type="primary" onClick={() => handleOpenModal()}>新增报备</Button>
+      {/* 2. 筛选区：补全所有筛选字段 */}
+      <Form form={queryForm} layout="vertical">
+        <Row gutter={24}>
+           <Col span={6}><Form.Item name="person" label="负责人"><Input placeholder="负责人" allowClear /></Form.Item></Col>
+           <Col span={6}><Form.Item name="leadName" label="线索名称"><Input placeholder="线索名称" allowClear /></Form.Item></Col>
+           <Col span={6}><Form.Item name="customerName" label="客户名称"><Input placeholder="客户名称" allowClear /></Form.Item></Col>
+           <Col span={6}><Form.Item name="isReported" label="报备情况">
+              <Select options={[{value: true, label: '已报备'}, {value: false, label: '未报备'}]} allowClear />
+           </Form.Item></Col>
+           <Col span={6}><Form.Item name="isReturned" label="回传情况">
+              <Select options={[{value: true, label: '已回传'}, {value: false, label: '未回传'}]} allowClear />
+           </Form.Item></Col>
+           <Col span={6}><Form.Item name="processingStatus" label="处理情况"><Input placeholder="处理情况" allowClear /></Form.Item></Col>
+           <Col span={6}><Form.Item name="isVideoGenerated" label="视频生成">
+              <Select options={[{value: true, label: '是'}, {value: false, label: '否'}]} allowClear />
+           </Form.Item></Col>
+           <Col span={6}><Form.Item name="isGroupCreated" label="是否建群">
+              <Select options={[{value: true, label: '是'}, {value: false, label: '否'}]} allowClear />
+           </Form.Item></Col>
+           <Col span={24} style={{ textAlign: 'right' }}>
+              <Button onClick={() => queryForm.resetFields()}>重置</Button>
+              <Button type="primary" style={{ marginLeft: 8 }}>查询</Button>
+           </Col>
+        </Row>
+      </Form>
+      
+      <Divider dashed />
+
+      {/* 3. 表格工具栏区：新增按钮放左侧 */}
+      <div style={{ marginBottom: 16 }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => handleOpenModal()}>新增报备</Button>
       </div>
 
       <Table 
@@ -119,6 +139,7 @@ export default function ReportInfoManagement() {
         size="middle"
         scroll={{ x: 1300 }}
         pagination={{ 
+          placement: 'bottomRight',
           showTotal: (total) => `共 ${total} 条`,
           showSizeChanger: true,
           defaultPageSize: 10 
