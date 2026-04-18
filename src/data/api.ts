@@ -128,11 +128,14 @@ export const getReportedPersonnelStats = (leads: LeadRecord[]) => {
   const stats = new Map<string, any>();
   leads.forEach(l => {
     if (l.isReported) {
-      const existing = stats.get(l.person) || { leadCount: 0, groupCount: 0, audioVideoCount: 0 };
+      const existing = stats.get(l.person) || { leadCount: 0, groupCount: 0, audioVideoCount: 0, screenshotCount: 0 };
       existing.leadCount += 1;
       existing.groupCount += l.groupCount;
       if (l.reportStatus && l.reportStatus.includes('音视频')) {
         existing.audioVideoCount += 1;
+      }
+      if (l.reportStatus && l.reportStatus.includes('截图')) {
+        existing.screenshotCount += 1;
       }
       stats.set(l.person, existing);
     }

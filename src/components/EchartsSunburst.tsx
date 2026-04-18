@@ -11,6 +11,7 @@ interface EchartsSunburstProps {
 
 const EchartsSunburst: React.FC<EchartsSunburstProps> = ({ data, onNodeSelect, selectedNode, currentPath = [] }) => {
   const [ringStyle, setRingStyle] = useState<'equal' | 'wider' | 'narrower'>('narrower');
+  const [textRotate, setTextRotate] = useState<'radial' | 'tangential' | 0>(0);
 
   const getSubTitle = () => {
     if (selectedNode === 'All') return '总数据线索透视';
@@ -44,34 +45,21 @@ const EchartsSunburst: React.FC<EchartsSunburstProps> = ({ data, onNodeSelect, s
     return [
       {}, 
       // Level 1
-      { r0: radii[0][0], r: radii[0][1], itemStyle: commonStyle, label: { rotate: 'tangential' } },
+      { r0: radii[0][0], r: radii[0][1], itemStyle: commonStyle, label: { rotate: textRotate } },
       // Level 2
-      { r0: radii[1][0], r: radii[1][1], itemStyle: commonStyle, label: { align: 'right' } },
+      { r0: radii[1][0], r: radii[1][1], itemStyle: commonStyle, label: { rotate: textRotate } },
       // Level 3
-      { r0: radii[2][0], r: radii[2][1], itemStyle: commonStyle },
+      { r0: radii[2][0], r: radii[2][1], itemStyle: commonStyle, label: { rotate: textRotate } },
       // Level 4
-      { r0: radii[3][0], r: radii[3][1], itemStyle: commonStyle },
+      { r0: radii[3][0], r: radii[3][1], itemStyle: commonStyle, label: { rotate: textRotate } },
       // Level 5
-      { r0: radii[4][0], r: radii[4][1], itemStyle: commonStyle },
+      { r0: radii[4][0], r: radii[4][1], itemStyle: commonStyle, label: { rotate: textRotate } },
       // Level 6
-      { r0: radii[5][0], r: radii[5][1], itemStyle: commonStyle, label: { position: 'outside', padding: 3, silent: false } }
+      { r0: radii[5][0], r: radii[5][1], itemStyle: commonStyle, label: { position: 'outside', padding: 3, silent: false, rotate: textRotate } }
     ];
   };
 
   const option = {
-    title: {
-      text: '线索报备数据枢纽',
-      subtext: getSubTitle(),
-      textStyle: {
-        fontSize: 14,
-        align: 'center'
-      },
-      subtextStyle: {
-        align: 'center',
-        color: '#3b82f6',
-        fontWeight: 'bold'
-      }
-    },
     tooltip: {
       trigger: 'item',
       formatter: '{b}: {c}个'
@@ -129,7 +117,21 @@ const EchartsSunburst: React.FC<EchartsSunburstProps> = ({ data, onNodeSelect, s
         </div>
       </div>
 
-      <div className="absolute bottom-0 right-0 z-10 p-2 pointer-events-none">
+      <div className="absolute bottom-0 right-0 z-10 p-2 pointer-events-none flex flex-col gap-2 items-end">
+        {/* Right Bottom: Text Direction Button Group */}
+        <Radio.Group 
+          value={textRotate} 
+          onChange={(e) => setTextRotate(e.target.value)} 
+          size="small"
+          optionType="button"
+          buttonStyle="solid"
+          className="shadow-sm shrink-0 pointer-events-auto"
+        >
+          <Radio.Button value="radial">放射文字</Radio.Button>
+          <Radio.Button value="tangential">环绕文字</Radio.Button>
+          <Radio.Button value={0}>水平对齐</Radio.Button>
+        </Radio.Group>
+
         {/* Right Bottom: Layout Button Group */}
         <Radio.Group 
           value={ringStyle} 

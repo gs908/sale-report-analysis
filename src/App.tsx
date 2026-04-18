@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Spin, Tabs, Select, Input, DatePicker } from 'antd';
+import { Spin, Tabs, Select, Input, DatePicker, Button } from 'antd';
 import type { TabsProps } from 'antd';
 import dayjs from 'dayjs';
 import { 
@@ -22,7 +22,7 @@ import { UnreportedRankTable, ReportedStatsTable, GroupStatsTable } from './comp
 import { LeadDetailsTable } from './components/LeadDetailsTable';
 
 import { ClipboardCheck } from 'lucide-react';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, SyncOutlined } from '@ant-design/icons';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -187,6 +187,18 @@ export default function App() {
     setFilterVideo(vid);
   };
 
+  const handleRefresh = async () => {
+    setLoading(true);
+    // Simulate re-fetching the data
+    const [leadsData, attrData] = await Promise.all([getLeads(), getPersonnel()]);
+    setLeads(leadsData);
+    setPersonnel(attrData);
+    // Optional delay to make standard fetch feel like a real refresh action
+    setTimeout(() => {
+      setLoading(false);
+    }, 500); 
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -243,6 +255,15 @@ export default function App() {
               bordered={false}
               className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[13px]"
             />
+            <Button 
+               type="primary" 
+               icon={<SyncOutlined />} 
+               onClick={handleRefresh}
+               className="ml-2 bg-blue-600 hover:bg-blue-700 shadow-sm"
+               size="small"
+            >
+              刷新
+            </Button>
           </div>
         </div>
       </header>
@@ -293,26 +314,29 @@ export default function App() {
           </div>
         </section>
 
-        {/* Personnel Stats Row: 1 Row, 3 Columns */}
-        <div className="grid grid-cols-1 min-[500px]:grid-cols-3 gap-4 lg:gap-6 items-start">
+        {/* Personnel Stats Row: Flex Row for precision width control */}
+        <div className="flex flex-wrap lg:flex-nowrap gap-4 lg:gap-6 items-start">
           
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <div className="w-full min-[300px]:w-[calc(50%-0.5rem)] lg:w-[25%] min-w-0 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
              <div className="pb-2 mb-2 border-b border-slate-50">
                <h3 className="text-[13px] font-bold text-slate-800">未报备线索人员排行</h3>
              </div>
              <UnreportedRankTable data={unreportedRankData} />
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <div className="w-full min-[300px]:w-[calc(50%-0.5rem)] lg:w-[32%] min-w-0 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
              <div className="pb-2 mb-2 border-b border-slate-50">
-               <h3 className="text-[13px] font-bold text-slate-800">核心人员报备量透视</h3>
+               <h3 className="text-[13px] font-bold text-slate-800">报备数量排行</h3>
              </div>
              <ReportedStatsTable data={reportedStatsData} />
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <div className="w-full lg:flex-1 lg:min-w-[40%] min-w-0 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
              <div className="pb-2 mb-2 border-b border-slate-50">
-               <h3 className="text-[13px] font-bold text-slate-800">群沟通活动概况</h3>
+               <h3 className="text-[13px] font-bold text-slate-800 flex items-baseline gap-2">
+                 群消息一览
+                 <span className="text-[11px] font-normal text-slate-400">带底色的为固定加群人员</span>
+               </h3>
              </div>
              <GroupStatsTable data={groupStatsData} />
           </div>
@@ -326,7 +350,7 @@ export default function App() {
              <p className="text-xs text-slate-500 mt-1">依赖于下方全局过滤条件，点击扇区进行深度下钻透视（联动展示下方详情与列表）</p>
            </div>
            {/* Wrap to ensure optimal full-width viewing without stretching too high */}
-           <div className="w-full max-w-[800px] mx-auto">
+           <div className="w-full max-w-[1200px] mx-auto">
              <EchartsSunburst 
                 data={chartData} 
                 onNodeSelect={handleNodeSelect} 
@@ -339,7 +363,7 @@ export default function App() {
         {/* Global Filters & Details Table Wrapped Together */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 mt-2">
            <div className="mb-4 pb-4 border-b border-slate-100">
-               <h2 className="text-[14px] font-bold text-slate-800">底层数据详情追踪及全局过滤</h2>
+               <h2 className="text-[14px] font-bold text-slate-800">售前交流报告生成情况一览</h2>
                <p className="text-xs text-slate-500 mt-1 mb-4">通过下方复合条件过滤，将实时改变全盘仪表板及上方排行榜图表结构</p>
                
                {/* --- GLOBAL FILTERS --- */}
