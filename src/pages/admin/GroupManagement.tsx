@@ -78,18 +78,51 @@ export default function GroupManagement() {
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setData(data.filter(item => item.id !== id));
+  const showConfirmDissolve = (id: string) => {
+    Modal.confirm({
+      title: '确定解散该群？',
+      content: '解散后将无法撤销，该群状态将变更为“已解散”。',
+      okText: '确定',
+      cancelText: '取消',
+      onOk: () => handleDissolve(id),
+    });
   };
 
-  const openMemberManagement = (record: GroupRecord) => {
-    setCurrentGroup(record);
-    setMemberDrawerOpen(true);
+  const handleDissolve = (id: string) => {
+    setData(data.map(item => item.id === id ? { ...item, status: '已解散', dissolvedAt: new Date().toLocaleString() } : item));
+  };
+
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<MemberRecord | null>(null);
+  const [memberForm] = Form.useForm();
+
+  const handleOpenMemberModal = (record?: MemberRecord) => {
+    setEditingMember(record || null);
+    if (record) {
+      memberForm.setFieldsValue(record);
+    } else {
+      memberForm.resetFields();
+    }
+    setIsMemberModalOpen(true);
+  };
+
+  const handleSaveMember = (values: any) => {
+    if (!currentGroup) return;
+    
+    let updatedMembers;
+    if (editingMember) {
+      updatedMembers = currentGroup.members.map(m => m.id === editingMember.id ? { ...m, ...values } : m);
+    } else {
+      updatedMembers = [...currentGroup.members, { id: `M_${Math.random()}`, ...values }];
+    }
+    
+    const updatedGroup = { ...currentGroup, members: updatedMembers };
+    setCurrentGroup(updatedGroup);
+    setData(data.map(g => g.id === updatedGroup.id ? updatedGroup : g));
+    setIsMemberModalOpen(false);
   };
 
   const columns: ColumnsType<GroupRecord> = [
-    { title: '群ID', dataIndex: 'id', key: 'id', width: 90 },
-    { title: '会话存档ID', dataIndex: 'archiveId', key: 'archiveId', width: 100 },
     { title: '群名称', dataIndex: 'name', key: 'name' },
     { title: '线索编号', dataIndex: 'leadId', key: 'leadId', width: 100 },
     { title: '线索名称', dataIndex: 'leadName', key: 'leadName' },
@@ -104,14 +137,13 @@ export default function GroupManagement() {
     { 
       title: '操作', 
       key: 'action', 
-      width: 250,
       render: (_, record) => (
-        <Space size="middle">
-          <Button type="link" size="small" onClick={() => openMemberManagement(record)}>成员管理 ({record.members.length})</Button>
+        <Space size="small">
+          <Button type="link" size="small" onClick={() => { setCurrentGroup(record); setMemberDrawerOpen(true); }}>成员管理 ({record.members.length})</Button>
           <Button type="link" size="small" onClick={() => handleOpenModal(record)}>编辑</Button>
-          <Popconfirm title="确定删除该群？" onConfirm={() => handleDelete(record.id)}>
-            <Button type="link" danger size="small">删除</Button>
-          </Popconfirm>
+          {record.status === '正常' && (
+            <Button type="link" danger size="small" onClick={() => showConfirmDissolve(record.id)}>解散</Button>
+          )}
         </Space>
       ) 
     },
@@ -141,18 +173,21 @@ export default function GroupManagement() {
     {
       title: '操作',
       key: 'action',
-      render: (_, __, index) => (
-        <Popconfirm title="确定移除此成员？" onConfirm={() => {
-           if (currentGroup) {
-             const newMembers = [...currentGroup.members];
-             newMembers.splice(index, 1);
-             const updatedGroup = { ...currentGroup, members: newMembers };
-             setCurrentGroup(updatedGroup);
-             setData(data.map(g => g.id === updatedGroup.id ? updatedGroup : g));
-           }
-        }}>
-           <Button type="link" danger size="small">移除</Button>
-        </Popconfirm>
+      render: (_, record, index) => (
+        <Space>
+           <Button type="link" size="small" onClick={() => handleOpenMemberModal(record)}>编辑</Button>
+           <Popconfirm title="确定移除此成员？" onConfirm={() => {
+              if (currentGroup) {
+                const newMembers = [...currentGroup.members];
+                newMembers.splice(index, 1);
+                const updatedGroup = { ...currentGroup, members: newMembers };
+                setCurrentGroup(updatedGroup);
+                setData(data.map(g => g.id === updatedGroup.id ? updatedGroup : g));
+              }
+           }}>
+              <Button type="link" danger size="small">移除</Button>
+           </Popconfirm>
+        </Space>
       )
     }
   ];
@@ -160,10 +195,20 @@ export default function GroupManagement() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-slate-800">群及群成员管理</h3>
+        <h3 className="text-lg font-bold text-slate-800">群管理</h3>
         <Button type="primary" onClick={() => handleOpenModal()}>新建群</Button>
       </div>
-      <Table columns={columns} dataSource={data} rowKey="id" size="middle" />
+      <Table 
+        columns={columns} 
+        dataSource={data} 
+        rowKey="id" 
+        size="middle" 
+        pagination={{ 
+          showTotal: (total) => `共 ${total} 条`,
+          showSizeChanger: true,
+          defaultPageSize: 10 
+        }} 
+      />
 
       {/* Add/Edit Modal */}
       <Modal 
@@ -171,17 +216,16 @@ export default function GroupManagement() {
         open={isModalOpen} 
         onOk={() => form.submit()} 
         onCancel={() => setIsModalOpen(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleSave}>
           <Form.Item name="name" label="群名称" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="archiveId" label="会话存档ID" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="archiveId" label="会话存档ID"><Input /></Form.Item>
           <Form.Item name="leadId" label="线索编号" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="leadName" label="线索名称"><Input /></Form.Item>
           <Form.Item name="status" label="群状态" rules={[{ required: true }]}>
             <Select options={[{ value: '正常', label: '正常' }, { value: '已解散', label: '已解散' }]} />
           </Form.Item>
-          {editingGroup && <Form.Item name="dissolvedAt" label="解散时间"><Input placeholder="YYYY-MM-DD HH:mm:ss" /></Form.Item>}
         </Form>
       </Modal>
 
@@ -189,24 +233,33 @@ export default function GroupManagement() {
       <Drawer
         title={`成员管理 - ${currentGroup?.name || ''}`}
         placement="right"
-        width={500}
+        size={500}
         onClose={() => setMemberDrawerOpen(false)}
         open={memberDrawerOpen}
       >
         <div className="mb-4">
-           <Button type="dashed" block onClick={() => {
-              const newMember: MemberRecord = { id: `M_${Math.random()}`, name: '新建人员', isFixed: false, department: '市场' };
-              if(currentGroup) {
-                 const updated = {...currentGroup, members: [...currentGroup.members, newMember]};
-                 setCurrentGroup(updated);
-                 setData(data.map(g => g.id === updated.id ? updated : g));
-              }
-           }}>
-             + 添加临时群成员
+           <Button type="primary" block onClick={() => handleOpenMemberModal()}>
+             + 添加群成员
            </Button>
         </div>
         <Table columns={memberColumns as any} dataSource={currentGroup?.members || []} rowKey="id" pagination={false} size="small" />
       </Drawer>
+
+      {/* Member Add/Edit Modal */}
+      <Modal 
+        title={editingMember ? "编辑成员" : "添加成员"}
+        open={isMemberModalOpen} 
+        onOk={() => memberForm.submit()} 
+        onCancel={() => setIsMemberModalOpen(false)}
+        destroyOnHidden
+      >
+        <Form form={memberForm} layout="vertical" onFinish={handleSaveMember}>
+          <Form.Item name="name" label="姓名" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="department" label="序列" rules={[{ required: true }]}>
+             <Select options={[{value: '管理', label: '管理'}, {value: '市场', label: '市场'}, {value: '工程', label: '工程'}, {value: 'BA', label: 'BA'}]} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

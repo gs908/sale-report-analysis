@@ -47,9 +47,9 @@ export default function MessageManagement() {
       title: '操作', 
       key: 'action',
       render: (_, record) => (
-        <Button type="primary" size="small" icon={<MessageOutlined />} onClick={() => openMessages(record)}>
-          查看消息
-        </Button>
+        <Space size="small">
+          <Button type="link" size="small" icon={<MessageOutlined />} onClick={() => openMessages(record)}>查看消息</Button>
+        </Space>
       )
     }
   ];
@@ -71,7 +71,17 @@ export default function MessageManagement() {
         </Space>
       </div>
       
-      <Table columns={columns} dataSource={data} rowKey="id" size="middle" />
+      <Table 
+        columns={columns} 
+        dataSource={data} 
+        rowKey="id" 
+        size="middle" 
+        pagination={{ 
+          showTotal: (total) => `共 ${total} 条`,
+          showSizeChanger: true,
+          defaultPageSize: 10 
+        }} 
+      />
 
       <Modal
         title={`${activeGroup?.name} - 聊天记录`}

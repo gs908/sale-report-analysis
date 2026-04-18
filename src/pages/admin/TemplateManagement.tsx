@@ -6,14 +6,15 @@ const { TextArea } = Input;
 
 interface MsgTemplate {
   id: string;
+  templateCode: string;
   name: string;
-  usage: string;
+  usage?: string;
   content: string;
 }
 
 const mockTemplates: MsgTemplate[] = [
-  { id: '1', name: '建群欢迎语', usage: '新建沟通群', content: '各位好，本群为【{leadName}】项目专属沟通群，后续交流将在此进行。' },
-  { id: '2', name: '视频报告推送', usage: '视频推群', content: '【{leadName}】的最新数字人分析报告已生成，请点击链接查看：{videoUrl}' }
+  { id: '1', templateCode: 'WELCOME_MSG', name: '建群欢迎语', usage: '新建沟通群', content: '各位好，本群为【{leadName}】项目专属沟通群，后续交流将在此进行。' },
+  { id: '2', templateCode: 'VIDEO_REPORT', name: '视频报告推送', usage: '视频推群', content: '【{leadName}】的最新数字人分析报告已生成，请点击链接查看：{videoUrl}' }
 ];
 
 export default function TemplateManagement() {
@@ -44,6 +45,7 @@ export default function TemplateManagement() {
   };
 
   const columns: ColumnsType<MsgTemplate> = [
+    { title: '模板编码', dataIndex: 'templateCode', key: 'templateCode', width: 120 },
     { title: '模板名称', dataIndex: 'name', key: 'name', width: 200 },
     { title: '使用场景', dataIndex: 'usage', key: 'usage', width: 150 },
     { 
@@ -57,7 +59,7 @@ export default function TemplateManagement() {
       key: 'action', 
       width: 150,
       render: (_, record) => (
-        <Space size="middle">
+        <Space size="small">
           <Button type="link" size="small" onClick={() => handleOpenModal(record)}>编辑</Button>
           <Popconfirm title="确定删除该模板？" onConfirm={() => handleDelete(record.id)}>
             <Button type="link" danger size="small">删除</Button>
@@ -77,18 +79,29 @@ export default function TemplateManagement() {
         <Button type="primary" onClick={() => handleOpenModal()}>新增模板</Button>
       </div>
 
-      <Table columns={columns} dataSource={data} rowKey="id" size="middle" />
+      <Table 
+        columns={columns} 
+        dataSource={data} 
+        rowKey="id" 
+        size="middle"
+        pagination={{ 
+          showTotal: (total) => `共 ${total} 条`,
+          showSizeChanger: true,
+          defaultPageSize: 10 
+        }} 
+      />
 
       <Modal 
         title={editingTpl ? "编辑消息模板" : "新增消息模板"}
         open={isModalOpen} 
         onOk={() => form.submit()} 
         onCancel={() => setIsModalOpen(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleSave}>
+          <Form.Item name="templateCode" label="模板编码" rules={[{ required: true, pattern: /^[A-Za-z].*$/, message: '模板编码必须以英文字符开头' }]}><Input /></Form.Item>
           <Form.Item name="name" label="模板名称" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="usage" label="使用场景" rules={[{ required: true }]}><Input placeholder="例如：新建沟通群" /></Form.Item>
+          <Form.Item name="usage" label="使用场景"><Input placeholder="例如：新建沟通群" /></Form.Item>
           <Form.Item name="content" label="模板内容" rules={[{ required: true }]}>
             <TextArea rows={5} placeholder="请在这里编写模板正文..." />
           </Form.Item>

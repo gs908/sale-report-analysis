@@ -8,7 +8,10 @@ import {
   UsergroupAddOutlined, 
   VideoCameraOutlined, 
   AppstoreOutlined,
-  LeftOutlined
+  LeftOutlined,
+  SettingOutlined,
+  RobotOutlined,
+  DatabaseOutlined
 } from '@ant-design/icons';
 
 // Import Admin Pages
@@ -18,6 +21,8 @@ import ReportInfoManagement from './admin/ReportInfoManagement';
 import FixedMemberManagement from './admin/FixedMemberManagement';
 import PipelineManagement from './admin/PipelineManagement';
 import TemplateManagement from './admin/TemplateManagement';
+import DictionaryManagement from './admin/DictionaryManagement';
+import AgentRegistrationManagement from './admin/AgentRegistration';
 
 const { Header, Sider, Content } = Layout;
 
@@ -26,12 +31,21 @@ export default function AdminDashboard() {
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
-    { key: '/admin/groups', icon: <TeamOutlined />, label: <Link to="/admin/groups">群及群成员管理</Link> },
+    { key: '/admin/groups', icon: <TeamOutlined />, label: <Link to="/admin/groups">群管理</Link> },
     { key: '/admin/messages', icon: <MessageOutlined />, label: <Link to="/admin/messages">群消息管理</Link> },
     { key: '/admin/reports', icon: <FileTextOutlined />, label: <Link to="/admin/reports">报备信息管理</Link> },
-    { key: '/admin/fixed-members', icon: <UsergroupAddOutlined />, label: <Link to="/admin/fixed-members">固定成员配置</Link> },
     { key: '/admin/pipeline', icon: <VideoCameraOutlined />, label: <Link to="/admin/pipeline">报告生成管理</Link> },
     { key: '/admin/templates', icon: <AppstoreOutlined />, label: <Link to="/admin/templates">消息模板管理</Link> },
+    { 
+      key: 'system', 
+      icon: <SettingOutlined />, 
+      label: '系统管理',
+      children: [
+        { key: '/admin/dictionary', icon: <DatabaseOutlined />, label: <Link to="/admin/dictionary">字典管理</Link> },
+        { key: '/admin/fixed-members', icon: <UsergroupAddOutlined />, label: <Link to="/admin/fixed-members">固定成员配置</Link> },
+      ]
+    },
+    { key: '/admin/agent', icon: <RobotOutlined />, label: <Link to="/admin/agent">Agent 管理</Link> },
   ];
 
   // Map sub routes to keys if necessary to keep menu active state
@@ -73,9 +87,11 @@ export default function AdminDashboard() {
               <Route path="groups" element={<GroupManagement />} />
               <Route path="messages" element={<MessageManagement />} />
               <Route path="reports" element={<ReportInfoManagement />} />
-              <Route path="fixed-members" element={<FixedMemberManagement />} />
               <Route path="pipeline" element={<PipelineManagement />} />
               <Route path="templates" element={<TemplateManagement />} />
+              <Route path="dictionary" element={<DictionaryManagement />} />
+              <Route path="fixed-members" element={<FixedMemberManagement />} />
+              <Route path="agent" element={<AgentRegistrationManagement />} />
             </Routes>
           </div>
         </Content>

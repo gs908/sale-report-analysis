@@ -55,7 +55,7 @@ export default function FixedMemberManagement() {
       title: '操作', 
       key: 'action', 
       render: (_, record) => (
-        <Space size="middle">
+        <Space size="small">
           <Button type="link" size="small" onClick={() => handleOpenModal(record)}>编辑</Button>
           <Popconfirm title="确定移除此固定成员？" onConfirm={() => handleDelete(record.id)}>
             <Button type="link" danger size="small">移除</Button>
@@ -75,14 +75,24 @@ export default function FixedMemberManagement() {
         <Button type="primary" onClick={() => handleOpenModal()}>新增固定成员</Button>
       </div>
       
-      <Table columns={columns} dataSource={data} rowKey="id" size="middle" />
+      <Table 
+        columns={columns} 
+        dataSource={data} 
+        rowKey="id" 
+        size="middle"
+        pagination={{ 
+          showTotal: (total) => `共 ${total} 条`,
+          showSizeChanger: true,
+          defaultPageSize: 10 
+        }} 
+      />
 
       <Modal 
         title={editingMember ? "编辑固定成员" : "新增固定成员"}
         open={isModalOpen} 
         onOk={() => form.submit()} 
         onCancel={() => setIsModalOpen(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleSave}>
           <Form.Item name="name" label="姓名" rules={[{ required: true }]}><Input /></Form.Item>

@@ -118,7 +118,17 @@ export default function PipelineManagement() {
          <p className="text-xs text-slate-500 mt-1">处理链路：音频文本提取 -&gt; 垂直行业报告生成 -&gt; 数字人视频播报生成。各环节可介入人工修正并向下流转。</p>
       </div>
 
-      <Table columns={columns} dataSource={data} rowKey="id" size="middle" />
+      <Table 
+        columns={columns} 
+        dataSource={data} 
+        rowKey="id" 
+        size="middle"
+        pagination={{ 
+          showTotal: (total) => `共 ${total} 条`,
+          showSizeChanger: true,
+          defaultPageSize: 10 
+        }} 
+      />
 
       {/* Audio Text Modal */}
       <Modal title="审阅并编辑音频解析文本" open={audioModalOpen} onOk={handleSaveAudio} onCancel={() => setAudioModalOpen(false)} width={600}>

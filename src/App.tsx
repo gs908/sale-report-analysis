@@ -204,7 +204,7 @@ function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Spin size="large" tip="系统数据加载中..." />
+        <Spin size="large" description="系统数据加载中..." />
       </div>
     );
   }
@@ -254,7 +254,7 @@ function Dashboard() {
               onChange={(dates) => setDateRange(dates as any)}
               format="M月D日"
               allowClear={false}
-              bordered={false}
+              variant="borderless"
               className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[13px] flex-1 min-[380px]:w-[220px]"
             />
             <Button 
