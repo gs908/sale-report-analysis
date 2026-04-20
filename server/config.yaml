@@ -1,0 +1,42 @@
+# ============================================================
+# 群消息分析系统 - 项目配置
+# ============================================================
+# 此文件为项目根目录配置，数据库等敏感配置通过环境变量管理
+# 详见 .env.example
+
+# 数据库配置（生产环境通过环境变量覆盖）
+database:
+  host: ${DATABASE_HOST:127.0.0.1}
+  port: ${DATABASE_PORT:4400}
+  user: ${DATABASE_USER:dev}
+  password: ${DATABASE_PASSWORD:}  # 从环境变量读取
+  database: ${DATABASE_NAME:salers}
+  charset: ${DATABASE_CHARSET:utf8mb4}
+  pool:
+    pool_pre_ping: true
+    pool_recycle: 3600
+
+# LLM 配置
+llm:
+  api_key: ${LLM_API_KEY:}
+  base_url: ${LLM_BASE_URL:https://api.openai.com/v1}
+  model: ${LLM_MODEL:gpt-4o-mini}
+  max_tokens: 2000
+  temperature: 0.7
+
+# 服务配置
+app:
+  host: 0.0.0.0
+  port: 8000
+  log_level: ${LOG_LEVEL:INFO}
+  reload: false
+
+# CORS 配置
+cors:
+  allow_origins:
+    - "*"
+  allow_credentials: true
+  allow_methods:
+    - "*"
+  allow_headers:
+    - "*"

@@ -1,0 +1,21 @@
+-- ============================================================
+-- init.sql
+-- 群消息分析系统 数据库初始化脚本（基准版本）
+-- DB: mysql+pymysql://dev:devadmin@127.0.0.1:4400/salers
+-- charset: utf8mb4
+-- ============================================================
+
+-- 注意：数据库需手动创建
+-- CREATE DATABASE IF NOT EXISTS salers DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- USE salers;
+
+-- 初始化请按顺序执行以下迁移文件：
+-- 001_update_group_info_lead_fields.sql  -- 调整 grp_group_info 字段
+-- 002_crm_lead.sql                      -- 线索主表
+-- 003_crm_report.sql                    -- 报备信息表
+-- 004_msg_template.sql                  -- 消息模板表
+-- 005_sys_dict_type.sql                  -- 字典类型表
+-- 006_sys_dict_item.sql                  -- 字典明细表
+-- 007_sys_dict_init_data.sql             -- 字典初始数据
+-- 008_grp_fixed_member.sql               -- 固定建群成员表
+-- update_member_names.sql               -- 成员名称映射更新

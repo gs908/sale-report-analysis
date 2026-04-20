@@ -1,0 +1,9 @@
+# LLM 配置（火山引擎 / Volcano Engine）
+api_base: "https://ark.cn-beijing.volces.com/api/coding/v3"
+model: "kimi-k2.5"
+api_key: "1700114c-6c80-4f53-817f-9f17af0eb1f9"
+
+# 消息分析分组配置
+batch:
+  small_threshold: 35   # 消息数 <= 此值时一次性发送
+  large_batch_size: 15  # 消息数 > threshold 时，每组的消息数
