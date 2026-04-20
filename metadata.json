@@ -1,6 +1,0 @@
-{
-  "name": "线索报备数据枢纽",
-  "description": "基于活跃线索与报备台账的数据透视展示系统，支持全方位层级下钻、人员绩效分析及多维报表统计。",
-  "requestFramePermissions": [],
-  "majorCapabilities": []
-}
